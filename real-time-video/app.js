@@ -49,6 +49,19 @@ function drawDropoffPoints(dropoffPoints) {
   }
 }
 
+function drawIntersections() {
+  mapContext.fillStyle = "white";
+  mapContext.beginPath();
+  mapContext.arc(100, 300, 10,0,2*Math.PI);
+  mapContext.fill();
+  mapContext.beginPath();
+  mapContext.arc(300, 300, 10,0,2*Math.PI);
+  mapContext.fill();
+  mapContext.beginPath();
+  mapContext.arc(500, 300, 10,0,2*Math.PI);
+  mapContext.fill();
+}
+
 function drawGrid() {
   mapContext.strokeStyle = "#000000"
   mapContext.lineWidth=10;
@@ -68,6 +81,7 @@ function drawGrid() {
   mapContext.moveTo(0, 300);
   mapContext.lineTo(600,300);
   mapContext.stroke();
+  drawIntersections();
 }
 
 const robotSize = { width: 30, height: 30 }
