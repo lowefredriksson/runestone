@@ -15,7 +15,7 @@ def parse_data(in_data: str):
 def ard_connection():
     ar_signal = ArSignal.get_instance()
     print("Start")
-    port = "COM4"  # This will be different for various devices and on windows it will probably be a COM port.
+    port = "/dev/ttyUSB0"  # This will be different for various devices and on windows it will probably be a COM port.
     bluetooth = serial.Serial(port, 9600, timeout=1)  # Start communications with the bluetooth unit
     print("Connected")
     # bluetooth.flushInput() #This gives the bluetooth a little kick
@@ -24,9 +24,9 @@ def ard_connection():
         input_data = bluetooth.readline()  # This reads the incoming data. In this particular example it will be the "Hello from Blue" line
         data = str(input_data.decode())
         (humid, temp) = parse_data(data)
-        # if humid is None or temp is None:
-        #     time.sleep(1)
-        #     continue
+        if humid is None or temp is None:
+            time.sleep(1)
+            continue
         ar_signal.set_temp(temp)
         ar_signal.set_humid(humid)
         ar_signal.get_json()
@@ -74,6 +74,16 @@ class ArSignal:
         print(json_string)
         return json_string
 
-#
-# ard_connection()
-#
+
+def get_humid():
+    ar_signal = ArSignal.get_instance()
+    ar_signal.get_humid()
+
+
+def get_temp():
+    ar_signal = ArSignal.get_instance()
+    ar_signal.get_temp()
+
+
+ard_connection()
+

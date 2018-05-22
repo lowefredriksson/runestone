@@ -34,9 +34,8 @@ String sending = "";
 sending += hum();
 sending += " - ";
 sending += temp();
-
 serial_connection.print(sending);
- 
+Serial.println(sending);
 // serial_connection.print("{ humiditi: ");/*sending humidity data*/
 // serial_connection.println(hum());
 // serial_connection.print("temprature: ");
