@@ -50,7 +50,7 @@ function drawDropoffPoints(dropoffPoints) {
 }
 
 function drawIntersections() {
-  mapContext.fillStyle = "white";
+  mapContext.fillStyle = "yellow";
   mapContext.beginPath();
   mapContext.arc(100, 300, 10,0,2*Math.PI);
   mapContext.fill();
