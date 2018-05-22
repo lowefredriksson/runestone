@@ -2,9 +2,18 @@
     <head>
         <link rel="stylesheet" type="text/css" href="styles.css">
     </head>
-    720x1280
     <body>
-        <canvas id="canvas-video" width="1280" height="720"></canvas>
+        <div id="container">
+            <div id="map-container">
+                <canvas id="canvas-map" width="600" height="600"></canvas>
+                <div id="map-info">
+                    <p> <b>Dropoff point:</b> </p>
+                    <p> <b>Light: </b> </p>
+                    <p> <b>Temperature: </b> </p>
+                </div>
+            </div>
+            <canvas id="canvas-video" width="1280" height="720"></canvas>
+        </div>
         <script src="./app.js"></script>
     </body>
 </html>
