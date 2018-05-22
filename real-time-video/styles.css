@@ -19,7 +19,7 @@
 #map-container {
     display: flex;
     flex-direction: row;
-    height: 500;
+    height: 700;
     width: 800;
 }
 
