@@ -69,6 +69,12 @@ let destDp = null;
 let light = null;
 let temperature = null;
 
+const mapping = {
+  0: {
+    1: [  ]
+  }
+}
+
 
 function drawDropoffPoints(dropoffPoints) {
 
