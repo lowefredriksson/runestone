@@ -3,6 +3,9 @@ import time
 import serial
 import threading
 
+temperature = 0
+humidity = 0
+
 
 def parse_data(in_data: str):
     list_string = in_data.split()
@@ -78,12 +81,24 @@ class ArSignal:
 
 def get_humid():
     ar_signal = ArSignal.get_instance()
-    ar_signal.get_humid()
+    return ar_signal.get_humid()
 
 
 def get_temp():
     ar_signal = ArSignal.get_instance()
-    ar_signal.get_temp()
+    return ar_signal.get_temp()
+
+
+def set_temp(temp):
+    global temperature
+    temperature = temp
+    return temperature
+
+
+def set_humid(humid):
+    global humidity
+    humidity = humid
+    return humidity
 
 
 class MyThread(threading.Thread):
@@ -91,7 +106,13 @@ class MyThread(threading.Thread):
         ard_connection()
 
 
-ard_thread = MyThread(name = "arduinoThread")
-ard_thread.start()
+ard_object = MyThread(name = "arduinoThread")
+ard_object.start()
+#
+# while True:
+#     time.sleep(2)
+#     print("Humid : " + str(get_humid()))
+#     print("Temp  : " + str(get_temp()))
+
 
 
