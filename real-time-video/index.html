@@ -1,20 +1,35 @@
 <html>
-    <head>
-        <link rel="stylesheet" type="text/css" href="styles.css">
-    </head>
-    <body>
-        <div id="container">
-            <div id="map-container">
-                <canvas id="canvas-map" width="600" height="600"></canvas>
-                <div id="map-info">
-                    <p> <b>Current dropoff point: </b> <div id="current-dp">  </div> </p>
-                    <p> <b>Destination dropoff point:</b> <div id="destination-dp"> </div></div></p>
-                    <p> <b>Light: </b> </p>
-                    <p> <b>Temperature: </b> </p>
-                </div>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+
+<body>
+    <div id="container">
+        <div id="map-container">
+            <canvas id="canvas-map" width="600" height="600"></canvas>
+            <div id="map-info">
+                <p id="map-info-element">
+                    <b>Current dropoff point: </b>
+                    <div id="current-dp"> </div>
+                </p>
+                <p id="map-info-element">
+                    <b>Destination dropoff point:</b>
+                    <div id="destination-dp"> </div>
+                </p>
+                <p id="map-info-element">
+                    <b>Light: </b>
+                    <div id="light"> </div>
+                </p>
+                <p id="map-info-element">
+                    <b>Temperature: </b>
+                    <div id="temperature"></div>
+                </p>
             </div>
-            <canvas id="canvas-video" width="1280" height="720"></canvas>
         </div>
-        <script src="./app.js"></script>
-    </body>
+        <canvas id="canvas-video" width="1280" height="720"></canvas>
+    </div>
+    <script src="./app.js"></script>
+</body>
+
 </html>

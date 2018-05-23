@@ -3,8 +3,11 @@ var canvas = document.getElementById('canvas-video');
 var context = canvas.getContext('2d');
 var map = document.getElementById('canvas-map');
 var mapContext = map.getContext('2d');
+
 var currentDpDisplay = document.getElementById('current-dp');
 var destinationDpDisplay = document.getElementById('destination-dp');
+var ligthDisplay = document.getElementById('light');
+var temperatureDisplay = document.getElementById('temperature');
 
 var dropoffPoints = [
   { 
@@ -37,10 +40,34 @@ var dropoffPoints = [
     y: 300,
     name: "Point 5"
   }
-]
+];
+
+var intersections = [
+  {
+    id: 5,
+    x: 100,
+    y: 300,
+    name: "Intersection 1" 
+  },
+  {
+    id: 6,
+    x: 300,
+    y: 300, 
+    name: "Intersection 2"
+  },
+  {
+    id: 7,
+    x: 500,
+    y: 300,
+    name: "Intersection 3"
+  }
+];
 const dropoffPointSize = { width: 10, height: 0};
 const dropoffTouchRecognitionSize = { width: 40, height: 40 };
-let currentDropoffpoint = null;
+let currentDp = "Start point";
+let destDp = null;
+let light = null;
+let temperature = null;
 
 
 function drawDropoffPoints(dropoffPoints) {
@@ -56,15 +83,12 @@ function drawDropoffPoints(dropoffPoints) {
 
 function drawIntersections() {
   mapContext.fillStyle = "yellow";
-  mapContext.beginPath();
-  mapContext.arc(100, 300, 10,0,2*Math.PI);
-  mapContext.fill();
-  mapContext.beginPath();
-  mapContext.arc(300, 300, 10,0,2*Math.PI);
-  mapContext.fill();
-  mapContext.beginPath();
-  mapContext.arc(500, 300, 10,0,2*Math.PI);
-  mapContext.fill();
+  for (var i = 0; i < intersections.length; i++) {
+    const inter = intersections[i];
+    mapContext.beginPath();
+    mapContext.arc(inter.x, inter.y, 10,0,2*Math.PI);
+    mapContext.fill();
+  }
 }
 
 function drawGrid() {
@@ -93,12 +117,15 @@ const robotSize = { width: 30, height: 30 }
 
 function moveRobot(dropOffId) {
   console.log("move robot");
-  mapContext.clearRect(0, 0, 600, 600);
-  drawGrid()
-  drawDropoffPoints(dropoffPoints)
   const dp = dropoffPoints.find(d => d.id === dropOffId);
-  mapContext.fillStyle = "blue";
-  mapContext.fillRect(db.x, db.y, robotSize.width, robotSize.height);
+  if (dp) {
+    mapContext.clearRect(0, 0, 600, 600);
+    drawGrid()
+    drawDropoffPoints(dropoffPoints)
+    mapContext.fillStyle = "blue";
+    mapContext.fillRect(dp.x - robotSize.width/2, dp.y - robotSize.height/2, robotSize.width, robotSize.height);
+    currentDp = dp
+  }
 }
 
 function drawInitialMap() {
@@ -106,47 +133,29 @@ function drawInitialMap() {
   drawDropoffPoints(dropoffPoints);
   mapContext.fillStyle = "blue";
   mapContext.fillRect(285, 560, robotSize.height, robotSize.width);
-  /*setTimeout(function() {
-    moveRobot(2)
-  }, 3000);*/
 }
 
 drawInitialMap();
-
-ws.onmessage = function (json) {
-    var message = JSON.parse(json.data);
-    switch (message.type) {
-      case 'frame':
-        var img = new Image();
-        img.onload = function () {
-          context.drawImage(img, 0, 0);
-        };
-        img.src = "data:image/jpg;base64," + message.data;
-        break;
-      case 'robot':
-        console.log("robot", message);
-        break; 
-      default: break;
-    }
-}
 
 function isInside(pos, rect){
   return pos.x > rect.x-(rect.width/2) && pos.x < rect.x+(rect.width/2) && pos.y < rect.y+(rect.height/2) && pos.y > rect.y-(rect.height/2)
 }
 
+
 function isInsideDropoffPoint(pos) {
-  for (var i = 0; i < dropoffPoints.length; i++) {
-    const dp = dropoffPoints[i];
+  const points = dropoffPoints.concat(intersections);
+  for (var i = 0; i < points.length; i++) {
+    const point = points[i];
     const rect = { 
-      x: dp.x, 
-      y: dp.y, 
+      x: point.x, 
+      y: point.y, 
       width: dropoffTouchRecognitionSize.width, 
       height: dropoffTouchRecognitionSize.height 
     };
     console.log("rect", rect);
     console.log("mousepos", pos);
     if (isInside(pos, rect)) {
-      return dp;
+      return point;
     }
   }
   return null;
@@ -162,7 +171,10 @@ function getMousePos(canvas, event) {
 }
 
 function updateDisplay() {
-  destinationDpDisplay.innerHTML = destinationDropoffpoint.name
+  destinationDpDisplay.innerHTML = destDp ? destDp.name : "";
+  currentDpDisplay.innerHTML = currentDp ? currentDp.name : "";
+  ligthDisplay.innerHTML = light ? light : "";
+  temperatureDisplay.innerHTML = temperature ? temperature : "";
 }
 
 map.addEventListener('click', function(evt) {
@@ -170,13 +182,27 @@ map.addEventListener('click', function(evt) {
   var selectedDp = isInsideDropoffPoint(mousePos);
   if (selectedDp) {
     console.log("hej", selectedDp)
-    destinationDropoffpoint = selectedDp
+    destDp = selectedDp
     updateDisplay();
   }
-
-  /*if (isInside(mousePos,rect)) {
-      alert('clicked inside rect');
-  }else{
-      alert('clicked outside rect');
-  }*/ 
 }, false);
+
+
+ws.onmessage = function (json) {
+  var message = JSON.parse(json.data);
+  switch (message.type) {
+    case 'frame':
+      var img = new Image();
+      img.onload = function () {
+        context.drawImage(img, 0, 0);
+      };
+      img.src = "data:image/jpg;base64," + message.data;
+      break;
+    case 'robot':
+      console.log("robot", message);
+      moveRobot(message.data.dropoffPoint);
+      updateDisplay();
+      break; 
+    default: break;
+  }
+}
