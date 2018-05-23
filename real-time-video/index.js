@@ -9,9 +9,17 @@ const wss = new WebSocket.Server({
 });
 
 const sendMessage = (client, type, data) => {
-    const message = { type, data: data.toString("base64") };
+    const message = { type, data };
     const jsonMessage = JSON.stringify(message);
     client.send(jsonMessage);
+}
+
+const broadcast = (type, data) => {
+    wss.clients.forEach(function each(client) {
+        if (client.readyState === WebSocket.OPEN) {
+            sendMessage(client, type, data);
+        }
+    });
 }
 
 wss.on('connection', function (ws) {
@@ -22,18 +30,22 @@ wss.on('connection', function (ws) {
         setInterval(() => {
             camera.read((err, data) => {
                 if (err) throw err;
-                const raw = data.toBuffer()
-                wss.clients.forEach(function each(client) {
-                    if (client.readyState === WebSocket.OPEN) {
-                        sendMessage(client, 'frame', raw);
-                    }
-                });
+                const raw = data.toBuffer().toString("base64")
+               
+                broadcast('frame', raw);
             })
         }, camInterval);
       } catch (e){
         console.log("Couldn't start camera:", e)
     }
 
+    setTimeout(function() {
+        broadcast('robot', {
+            dropoffPoint: 4,
+            light: 26,
+            temperature: 22
+        })
+    },4000)
 })
 
 

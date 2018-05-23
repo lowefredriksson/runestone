@@ -20,7 +20,11 @@
     display: flex;
     flex-direction: row;
     height: 700;
-    width: 800;
+    width: 1000;
+}
+
+#map-info-element {
+    display: flex;
 }
 
 #map-info {
