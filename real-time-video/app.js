@@ -8,6 +8,7 @@ var currentDpDisplay = document.getElementById('current-dp');
 var destinationDpDisplay = document.getElementById('destination-dp');
 var ligthDisplay = document.getElementById('light');
 var temperatureDisplay = document.getElementById('temperature');
+var commandsDisplay = document.getElementById('commands');
 
 var dropoffPoints = [
   { 
@@ -59,16 +60,24 @@ var dropoffPoints = [
     x: 500,
     y: 300,
     name: "Intersection 3"
+  },
+  {
+    id: 8, 
+    type: "INITIAL",
+    x: 300,
+    y: 590,
+    name: "Start position"
   }
 ];
 
 
 const dropoffPointSize = { width: 10, height: 0};
 const dropoffTouchRecognitionSize = { width: 40, height: 40 };
-let currentDp = "Start point";
+let currentDp = dropoffPoints[8];
 let destDp = null;
 let light = null;
 let temperature = null;
+let commands = null;
 
 /*1: forward
 2: backward
@@ -110,7 +119,7 @@ const R = 4;
  * 7: up
  */
 
-const mapping = {
+const paths = {
   0: {
     1: [B, R, F, L, F],
     2: [B, R, F, F, L, F],
@@ -182,7 +191,16 @@ const mapping = {
     4: [R, F],
     5: [L, F, F, R],
     6: [L, F, R]
-  }
+  },
+  8: {
+    0: [F, L, F, R, F],
+    1: [F, F],
+    2: [F, R, F, L, F],
+    3: [F, L, F, F],
+    4: [F, R, F, F],
+    5: [F, L, F, R],
+    7: [F, R, F, L]
+  },
 }
 
 
@@ -191,19 +209,13 @@ function drawDropoffPoints(dropoffPoints) {
   mapContext.fillStyle = "red";
   for (var i = 0; i < dropoffPoints.length; i++) {
     const dp = dropoffPoints[i];
-    mapContext.fillStyle = dp.type === "INTERSECTION" ? "yellow" : "red";
+    mapContext.fillStyle = dp.type === "INITIAL" 
+      ? "blue"
+      : (dp.type === "INTERSECTION" 
+        ? "yellow" 
+        : "red")
     mapContext.beginPath();
     mapContext.arc(dp.x, dp.y, dropoffPointSize.width,dropoffPointSize.height,2*Math.PI);
-    mapContext.fill();
-  }
-}
-
-function drawIntersections() {
-  mapContext.fillStyle = "yellow";
-  for (var i = 0; i < intersections.length; i++) {
-    const inter = intersections[i];
-    mapContext.beginPath();
-    mapContext.arc(inter.x, inter.y, 10,0,2*Math.PI);
     mapContext.fill();
   }
 }
@@ -259,19 +271,20 @@ function isInside(pos, rect){
 
 
 function isInsideDropoffPoint(pos) {
-  const points = dropoffPoints.concat(intersections);
-  for (var i = 0; i < points.length; i++) {
-    const point = points[i];
-    const rect = { 
-      x: point.x, 
-      y: point.y, 
-      width: dropoffTouchRecognitionSize.width, 
-      height: dropoffTouchRecognitionSize.height 
-    };
-    console.log("rect", rect);
-    console.log("mousepos", pos);
-    if (isInside(pos, rect)) {
-      return point;
+  for (var i = 0; i < dropoffPoints.length; i++) {
+    const point = dropoffPoints[i];
+    if (point !== "INITIAL") {
+      const rect = { 
+        x: point.x, 
+        y: point.y, 
+        width: dropoffTouchRecognitionSize.width, 
+        height: dropoffTouchRecognitionSize.height 
+      };
+      console.log("rect", rect);
+      console.log("mousepos", pos);
+      if (isInside(pos, rect)) {
+        return point;
+      }
     }
   }
   return null;
@@ -291,14 +304,15 @@ function updateDisplay() {
   currentDpDisplay.innerHTML = currentDp ? currentDp.name : "";
   ligthDisplay.innerHTML = light ? light : "";
   temperatureDisplay.innerHTML = temperature ? temperature : "";
+  commandsDisplay.innerHTML = commands ? commands : "";
 }
 
 map.addEventListener('click', function(evt) {
   var mousePos = getMousePos(map, evt);
   var selectedDp = isInsideDropoffPoint(mousePos);
   if (selectedDp) {
-    console.log("hej", selectedDp)
     destDp = selectedDp
+    commands = stringFromCommands(paths[currentDp.id][destDp.id])
     updateDisplay();
   }
 }, false);
@@ -316,6 +330,7 @@ ws.onmessage = function (json) {
       break;
     case 'robot':
       console.log("robot", message);
+      
       moveRobot(message.data.dropoffPoint);
       updateDisplay();
       break; 
