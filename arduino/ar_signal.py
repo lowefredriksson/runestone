@@ -1,6 +1,7 @@
 import json
 import time
 import serial
+import threading
 
 
 def parse_data(in_data: str):
@@ -85,5 +86,12 @@ def get_temp():
     ar_signal.get_temp()
 
 
-ard_connection()
+class MyThread(threading.Thread):
+    def run(self):
+        ard_connection()
+
+
+ard_thread = MyThread(name = "arduinoThread")
+ard_thread.start()
+
 
