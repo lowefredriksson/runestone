@@ -22,8 +22,6 @@ app.listen(4000, () => {
     console.log("up")
 });
 
-
-
 const sendMessage = (client, type, data) => {
     const message = { type, data };
     const jsonMessage = JSON.stringify(message);
