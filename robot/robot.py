@@ -2,6 +2,7 @@ import bluetooth
 import threading
 import json
 import time
+#import ar_signal
 from ev3dev.ev3 import *
 
 mLeft = LargeMotor('outA')
@@ -16,14 +17,13 @@ gs = GyroSensor()
 ts = TouchSensor()
 
 webclientAddress = 'FC:F8:AE:1F:00:F8'
-arduinoAddress = 'AA:BB:CC:DD:EE:FF'
 
 server_socket = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
 port = 1
 server_socket.bind(("", port))
 server_socket.listen(1)
 web_client = None
-arduino_client = None
+web_client_message = ""
 
 
 class ConnectedClient(threading.Thread):
@@ -35,18 +35,15 @@ class ConnectedClient(threading.Thread):
         self.message_to_send = None
 
     def run(self):
-        global webclientAddress
-        global arduinoAddress
-        global web_client
-        global arduino_client
+        global web_client_message
         try:
             while True:
                 data = self.socket.recv(1024)
                 if len(data) == 0:
                     break
                 str_data = data.decode('utf-8')
-                self.message = json.loads(str_data)
-                print("self.message:", self.message)
+                web_client_message = json.loads(str_data)
+                print("self.message:", web_client_message)
                 if self.message_to_send is not None:
                     print("sending")
                     self.socket.send(self.message_to_send)
@@ -54,10 +51,6 @@ class ConnectedClient(threading.Thread):
         except IOError:
             pass
         self.socket.close()
-        if client_info == webclientAddress:
-        	webclientAddress = None
-        elif client_info == arduinoAddress:
-          	arduino_client = None
         print(self.client_info, ": disconnected")
 
 
@@ -68,14 +61,26 @@ def stop():
 
 
 def forth():
-    prin("fullspeed")
-    mLeft.run_forever(speed_sp=100)
-    mRight.run_forever(speed_sp=100)
+    if cs.value() == 1:
+        mLeft.run_forever(speed_sp=100)
+        mRight.run_forever(speed_sp=100)
+    else:
+        for i in range(1, 400):
+            mLeft.run_timed(time_sp=20, speed_sp=150)
+            mRight.run_timed(time_sp=20, speed_sp=-150)
+            if cs.value() == 1:
+                break
+        for j in range(1, 150):
+            mRight.run_timed(time_sp=20, speed_sp=100)
+            mLeft.run_timed(time_sp=20, speed_sp=-100)
+            if cs.value() == 1:
+                break
+    #web_client.message_to_send = ar_signal.get_json()
 
 
 def back():
-    mLeft.run_forever(speed_sp=-100)
-    mRight.run_forever(speed_sp=-100)
+    mLeft.run_forever(time_sp=20, speed_sp=-100)
+    mRight.run_forever(time_sp=20, speed_sp=-100)
 
 
 def right():
@@ -95,18 +100,7 @@ def left():
     while gs.value() > -90:
         pass
 
-
-def around():
-    gs.mode = 'GYRO-RATE'
-    gs.mode = 'GYRO-ANG'
-    mLeft.run_forever(speed_sp=50)
-    mRight.run_forever(speed_sp=-50)
-    while gs.value() == 180:
-        pass
-
-
 def forkup():
-    print("liftfork")
     fork.run_timed(position_sp=50, speed_sp=100)
 
 
@@ -115,56 +109,43 @@ def forkdown():
 
 
 while True:
+    print("while1")
     if web_client is None:
         print("test9")
         client_socket, client_info = server_socket.accept()
         print(client_info, ": connection accepted")
-        print(client_info[0])
-        if client_info[0] == webclientAddress:
-            print("web_client")
+        print("web_client")
         web_client = ConnectedClient(client_socket, client_info)
         print(web_client.message)
         web_client.setDaemon(True)
-        print(web_client.message)
         web_client.start()
 
-    elif client_info[0] == arduinoAddress:
-        print("arduino_client")
-    arduino_client = ConnectedClient(client_socket, client_info)
-    arduino_client.setDaemon(True)
-    arduino_client.start()
-print(web_client.message)
+    print("while2")
+    #print("list_action", web_client.message['list_action'])
+    print("web_client.message", web_client_message)
+    #json = json.loads(web_client_message)
+    if not web_client_message:
+        time.sleep(0.5)
+        continue
+    for command in web_client_message['list_action']:
+        if command == 1:
+            forth()
 
-if web_client.message['action'] == "down":
-    forkdown()
+        elif command == 2:
+            back()
 
-elif web_client.message['action'] == "up":
-    forkup()
+        elif command == 3:
+            left()
 
-elif web_client.message['move'] == "forward":
-    forth()
-    time.sleep(1)
-    stop()
+        elif command == 4:
+            right()
 
-elif web_client.message['move'] == "backward":
-    back()
-    time.sleep(1)
-    stop()
+        elif command == 5:
+            forkdown()
 
-elif web_client.message['move'] == "left":
-    left()
-    stop()
+        elif command == 6:
+            forkup()
 
-elif web_client.message['move'] == "right":
-    right()
-    stop()
-
-elif web_client.message['move'] == "around":
-    around()
-    time.sleep(1)
-    stop()
-
-# elif arduino_client.message['temperature']
 
 time.sleep(1)
 server_socket.close()

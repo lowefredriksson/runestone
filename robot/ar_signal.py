@@ -19,7 +19,7 @@ def parse_data(in_data: str):
 def ard_connection():
     ar_signal = ArSignal.get_instance()
     print("Start")
-    port = "/dev/ttyUSB0"  # This will be different for various devices and on windows it will probably be a COM port.
+    port = "/dev/ttyACM0"  # This will be different for various devices and on windows it will probably be a COM port.
     bluetooth = serial.Serial(port, 9600, timeout=1)  # Start communications with the bluetooth unit
     print("Connected")
     # bluetooth.flushInput() #This gives the bluetooth a little kick
@@ -65,9 +65,11 @@ class ArSignal:
         return self.humid
 
     def get_temp(self):
+        print (self.temp)
         return self.temp
 
     def get_humid(self):
+        print (self.humid)
         return self.humid
 
     def get_json(self):
@@ -75,7 +77,6 @@ class ArSignal:
         json_data['humid'] = self.humid
         json_data['temp'] = self.temp
         json_string = json.dumps(json_data)
-        print(json_string)
         return json_string
 
 
@@ -86,6 +87,7 @@ def get_humid():
 
 def get_temp():
     ar_signal = ArSignal.get_instance()
+
     return ar_signal.get_temp()
 
 
