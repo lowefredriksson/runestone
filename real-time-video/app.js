@@ -99,8 +99,7 @@ function stringFromCommands(cmds) {
   return cmds.map(cmd => stringFromCommand(cmd))
 }
 
-function drawDropoffPoints(dropoffPoints) {
-
+function drawPoints(dropoffPoints) {
   mapContext.fillStyle = "red";
   for (var i = 0; i < dropoffPoints.length; i++) {
     const dp = dropoffPoints[i];
@@ -144,7 +143,7 @@ function updateMap(dropOffId) {
   if (dp) {
     mapContext.clearRect(0, 0, 600, 600);
     drawGrid()
-    drawDropoffPoints(dropoffPoints)
+    drawPoints(dropoffPoints)
     mapContext.fillStyle = "blue";
     mapContext.fillRect(dp.x - robotSize.width/2, dp.y - robotSize.height/2, robotSize.width, robotSize.height);
   }
