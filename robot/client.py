@@ -6,7 +6,15 @@ import time
 client_socket = BluetoothSocket(RFCOMM)
 
 client_socket.connect(("D4:36:39:D1:E3.1F", 1))
-
+#
+# <<<<<<< HEAD
+# while True:
+#     data = {}
+#
+#     data['list_action'] = [1, 2, 3]
+#     json_data = json.dumps(data)
+# =======
+# >>>>>>> 7cf62506b441648cf98990f19f40bb6a17a68771
 
 data = {}
 
