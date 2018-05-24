@@ -9,6 +9,7 @@ client_socket.connect(("D4:36:39:D1:E3.1F", 1))
 
 while True:
     data = {}
+
     data['list_action'] = [1, 2, 3]
     json_data = json.dumps(data)
 
