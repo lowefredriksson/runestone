@@ -36,18 +36,14 @@ l2.pack()
 
 on_hit = False
 def hit_me():
-	global on_hit
-	if on_hit == False:
-		on_hit = True
-		payload = e.get()
-		conn.request("POST", "/robotData", payload, headers)
-		var.set("The request have send to server : "+payload)
-		res = conn.getresponse()
-		data = res.read()
-		var2.set(data)
-	else:
-		on_hit = False
-		var.set('')
+	on_hit = True
+	payload = e.get()
+	conn.request("POST", "/robotData", payload, headers)
+	var.set("The request have send to server : "+payload)
+	res = conn.getresponse()
+	data = res.read()
+	var2.set(data)
+
 
 b = tk.Button(window, text='hit me', width=15,
               height=2, command=hit_me)
