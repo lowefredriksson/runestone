@@ -28,8 +28,18 @@ class S(BaseHTTPRequestHandler):
 
         self._set_response()
         self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
+		#self.wfile.write("send action to robot".encode('utf-8'))
 
 def run(server_class=HTTPServer, handler_class=S, port=8080):
+	
+	# Example of how to create the client socket and send json to the robot. 
+	#((author Antti bluetooth connection
+	client_socket=BluetoothSocket( RFCOMM )
+	client_socket.connect(("B0:B4:48:78:4F:45", 3))
+	global payload = ""
+		
+	
+	#server stuff
     logging.basicConfig(level=logging.INFO)
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
@@ -38,6 +48,8 @@ def run(server_class=HTTPServer, handler_class=S, port=8080):
         httpd.serve_forever()
     except KeyboardInterrupt:
         pass
+	client_socket.send(payload)
+	client_socket.close()
     httpd.server_close()
     logging.info('Stopping httpd...\n')
 
