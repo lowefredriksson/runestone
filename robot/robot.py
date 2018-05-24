@@ -2,7 +2,7 @@ import bluetooth
 import threading
 import json
 import time
-#import ar_signal
+import ar_signal
 from ev3dev.ev3 import *
 
 mLeft = LargeMotor('outA')
@@ -61,29 +61,56 @@ def stop():
 
 
 def forth():
-    if cs.value() == 1:
-        mLeft.run_forever(speed_sp=100)
-        mRight.run_forever(speed_sp=100)
-    else:
-        for i in range(1, 400):
-            mLeft.run_timed(time_sp=20, speed_sp=150)
-            mRight.run_timed(time_sp=20, speed_sp=-150)
-            if cs.value() == 1:
-                break
-        for j in range(1, 150):
-            mRight.run_timed(time_sp=20, speed_sp=100)
-            mLeft.run_timed(time_sp=20, speed_sp=-100)
-            if cs.value() == 1:
-                break
-    #web_client.message_to_send = ar_signal.get_json()
+    print("forward")
+    run = True
+    mLeft.run_forever(speed_sp=50)
+    mRight.run_forever(speed_sp=50)
+    time.sleep(1)
+    while run:
+        color_value = cs.value()
+        # black: go straight forward
+        if color_value == 1:
+            mLeft.run_forever(speed_sp=50)
+            mRight.run_forever(speed_sp=50)
+        # yellow:stop
+        elif color_value == 4:
+            time.sleep(1)
+            stop()
+            run = False
+            send_data_to_server()
+
+        # blue:stop
+        elif color_value == 2:
+            time.sleep(1)
+            stop()
+            run = False
+        # other colors: adjust the direction and find the black line
+
+        else:
+            for i in range(1, 400):
+                mLeft.run_timed(time_sp=20, speed_sp=150)
+                mRight.run_timed(time_sp=20, speed_sp=-150)
+                if cs.value() == 1:
+                    break
+            for j in range(1, 150):
+                mRight.run_timed(time_sp=20, speed_sp=100)
+                mLeft.run_timed(time_sp=20, speed_sp=-100)
+                if cs.value() == 1:
+                    break
+
+        time.sleep(0.1)
+
+# web_client.message_to_send = ar_signal.get_json()
 
 
 def back():
-    mLeft.run_forever(time_sp=20, speed_sp=-100)
-    mRight.run_forever(time_sp=20, speed_sp=-100)
+    print("backwards")
+    mLeft.run_forever(time_sp=20, speed_sp=-50)
+    mRight.run_forever(time_sp=20, speed_sp=-50)
 
 
 def right():
+    print("turning right")
     gs.mode = 'GYRO-RATE'
     gs.mode = 'GYRO-ANG'
     mLeft.run_forever(speed_sp=-50)
@@ -93,6 +120,7 @@ def right():
 
 
 def left():
+    print("turning left")
     gs.mode = 'GYRO-RATE'
     gs.mode = 'GYRO-ANG'
     mLeft.run_forever(speed_sp=50)
@@ -100,18 +128,98 @@ def left():
     while gs.value() > -90:
         pass
 
+
 def forkup():
-    fork.run_timed(position_sp=50, speed_sp=100)
+    run = True
+    while run:
+        # black: go straight forward
+        color_value = cs.value()
+        if color_value == 1:
+            mLeft.run_forever(speed_sp=50)
+            mRight.run_forever(speed_sp=50)
+        # pick up cargo
+        elif ts.value() == 1:
+            print("lifting cargo")
+            stop()
+            fork.run_timed(time_sp=100, speed_sp=150)
+            run = False
+            send_data_to_server()
+
+        # other colors: adjust the direction and find the black line
+        else:
+            for i in range(1, 400):
+                mLeft.run_timed(time_sp=20, speed_sp=150)
+                mRight.run_timed(time_sp=20, speed_sp=-150)
+                if cs.value() == 1:
+                    break
+            for j in range(1, 150):
+                mRight.run_timed(time_sp=20, speed_sp=100)
+                mLeft.run_timed(time_sp=20, speed_sp=-100)
+                if cs.value() == 1:
+                    break
 
 
 def forkdown():
-    fork.run_timed(position_sp=50, speed_sp=-100)
+    run = True
+    while run:
+        # black: go straight forward
+        color_value = cs.value()
+        if color_value == 1:
+            mLeft.run_forever(speed_sp=50)
+            mRight.run_forever(speed_sp=50)
+        # red:put cargo down
+        elif color_value == 5:
+            print("putting cargo down")
+            stop()
+            fork.run_timed(time_sp=100, speed_sp=-150)
+            run = False
+            send_data_to_server()
+        # other colors: adjust the direction and find the black line
+        else:
+            for i in range(1, 400):
+                mLeft.run_timed(time_sp=20, speed_sp=150)
+                mRight.run_timed(time_sp=20, speed_sp=-150)
+                if cs.value() == 1:
+                    break
+            for j in range(1, 150):
+                mRight.run_timed(time_sp=20, speed_sp=100)
+                mLeft.run_timed(time_sp=20, speed_sp=-100)
+                if cs.value() == 1:
+                    break
+
+
+def send_data_to_server():
+    data = {}
+    temp = ar_signal.get_temp()
+    hum = ar_signal.get_humid()
+
+    if temp > 20:
+        data['temperature'] = 'good'
+    elif 10 >= temp <= 20:
+        data['temperature'] = 'acceptable'
+    else:
+        data['temperature'] = 'bad'
+
+    if hum > 20:
+        data['humidity'] = 'good'
+    elif 10 >= hum <= 20:
+        data['humidity'] = 'acceptable'
+    else:
+        data['humidity'] = 'bad'
+
+    if ts.value() == 1:
+        data['cargo'] = 'yes'
+    else:
+        data['cargo'] = 'no'
+
+    json_data = json.dumps(data)
+
+    web_client.message_to_send = json_data
 
 
 while True:
-    print("while1")
     if web_client is None:
-        print("test9")
+        print("waiting for client/server")
         client_socket, client_info = server_socket.accept()
         print(client_info, ": connection accepted")
         print("web_client")
@@ -120,32 +228,32 @@ while True:
         web_client.setDaemon(True)
         web_client.start()
 
-    print("while2")
     #print("list_action", web_client.message['list_action'])
     print("web_client.message", web_client_message)
     #json = json.loads(web_client_message)
     if not web_client_message:
         time.sleep(0.5)
         continue
-    for command in web_client_message['list_action']:
-        if command == 1:
-            forth()
+    else:
+        for command in web_client_message['list_action']:
+            if command == 1:
+                forth()
 
-        elif command == 2:
-            back()
+            elif command == 2:
+                back()
 
-        elif command == 3:
-            left()
+            elif command == 3:
+                left()
 
-        elif command == 4:
-            right()
+            elif command == 4:
+                right()
 
-        elif command == 5:
-            forkdown()
+            elif command == 5:
+                forkdown()
 
-        elif command == 6:
-            forkup()
-
+            elif command == 6:
+                forkup()
+        web_client_message = None
 
 time.sleep(1)
 server_socket.close()
