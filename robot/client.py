@@ -7,17 +7,17 @@ client_socket = BluetoothSocket(RFCOMM)
 
 client_socket.connect(("D4:36:39:D1:E3.1F", 1))
 
-while True:
-    data = {}
-    data['list_action'] = [1, 2, 3]
-    json_data = json.dumps(data)
 
-    print(json_data)
+data = {}
+data['list_action'] = [1, 3, 1, 4, 5]
+json_data = json.dumps(data)
 
-    client_socket.send(json_data)
+print(json_data)
 
-    print("Finished")
+client_socket.send(json_data)
 
-    time.sleep(2)
+print("Finished")
 
-client_socket.close()
+time.sleep(2)
+
+#client_socket.close()
