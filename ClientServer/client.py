@@ -1,39 +1,23 @@
-import socket
-import sys
+from bluetooth import *
+import json
+import time
 
-try:
-	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-except socket.error:
-	print("Failed to connect")
-	sys.exit();
-	
-print("Socket Created")
+# Example of how to create the client socket and send json to the robot.
+client_socket = BluetoothSocket(RFCOMM)
 
-host = '0.0.0.0'
-port = 8888
+client_socket.connect(("D4:36:39:D1:E3.1F", 1))
 
-try:
-	remote_ip = socket.gethostbyname(host)
-except socket.gaierror:
-	print("Hostname counld not be resolved")
-	sys.exit()
-	
-print("IP Adresss: " + remote_ip)
 
-s.connect((remote_ip,port))
+data = {}
+data['list_action'] = [1, 3, 1, 4, 5]
+json_data = json.dumps(data)
 
-print("Socket Connected to " + host + "using IP " + remote_ip)
+print(json_data)
 
-while True:
-	message = input("please input the text: ")
-	try:
-		s.sendall(message)
-	except socket.error:
-		print("Did not send successfully")
-		sys.exit()
+client_socket.send(json_data)
 
-	print("Message Sent Successfully")
-	reply = s.recv(1024)
-	print(reply.decode())
+print("Finished")
 
-s.close()
+time.sleep(2)
+
+#client_socket.close()
