@@ -40,7 +40,7 @@ class ConnectedClient(threading.Thread):
             while True:
                 data = self.socket.recv(1024)
                 if len(data) == 0:
-                    break
+                    continue
                 str_data = data.decode('utf-8')
                 web_client_message = json.loads(str_data)
                 print("self.message:", web_client_message)
@@ -227,10 +227,9 @@ while True:
         print(web_client.message)
         web_client.setDaemon(True)
         web_client.start()
-
-    #print("list_action", web_client.message['list_action'])
+    # print("list_action", web_client.message['list_action'])
     print("web_client.message", web_client_message)
-    #json = json.loads(web_client_message)
+    # json = json.loads(web_client_message)
     if not web_client_message:
         time.sleep(0.5)
         continue

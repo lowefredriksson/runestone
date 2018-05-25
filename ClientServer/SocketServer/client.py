@@ -5,7 +5,7 @@ try:
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 except socket.error:
 	print("Failed to connect")
-	sys.exit();
+	sys.exit()
 	
 print("Socket Created")
 

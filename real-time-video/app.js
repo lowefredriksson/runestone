@@ -1,3 +1,4 @@
+var WebSocket = require('ws');
 ws = new WebSocket("ws://localhost:8080");
 var canvas = document.getElementById('canvas-video');
 var context = canvas.getContext('2d');

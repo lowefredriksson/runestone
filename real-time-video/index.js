@@ -1,4 +1,4 @@
-const cv = require('opencv');
+// const cv = require('opencv');
 const bodyParser = require('body-parser')
 const WebSocket = require('ws');
 const express = require('express');
@@ -36,30 +36,30 @@ const broadcast = (type, data) => {
     });
 }
 
-wss.on('connection', function (ws) {
-    console.log("connection");
-
-    try {
-        var camera = new cv.VideoCapture(0);
-        setInterval(() => {
-            camera.read((err, data) => {
-                if (err) throw err;
-                const raw = data.toBuffer().toString("base64")
-               
-                broadcast('frame', raw);
-            })
-        }, camInterval);
-      } catch (e){
-        console.log("Couldn't start camera:", e)
-    }
-
-    setTimeout(function() {
-        broadcast('robot', {
-            dropoffPoint: 4,
-            light: 26,
-            temperature: 22
-        })
-    },4000)
-})
+// wss.on('connection', function (ws) {
+//     console.log("connection");
+//
+//     try {
+//         var camera = new cv.VideoCapture(0);
+//         setInterval(() => {
+//             camera.read((err, data) => {
+//                 if (err) throw err;
+//                 const raw = data.toBuffer().toString("base64")
+//
+//                 broadcast('frame', raw);
+//             })
+//         }, camInterval);
+//       } catch (e){
+//         console.log("Couldn't start camera:", e)
+//     }
+//
+//     setTimeout(function() {
+//         broadcast('robot', {
+//             dropoffPoint: 4,
+//             light: 26,
+//             temperature: 22
+//         })
+//     },4000)
+// })
 
 
