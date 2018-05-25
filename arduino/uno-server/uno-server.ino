@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <SoftwareSerial.h>
 
+
 #define MAX_DATA 200
 #define DHTPIN 7     // what digital pin we're connected to
 #define DHTTYPE DHT22   
