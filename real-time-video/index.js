@@ -41,8 +41,8 @@ app.use(bodyParser.json());
 
 const mockRobotResponse = () => {
     const conditions = ["good", "acceptable", "bad"];
-    _humidity = conditions[getRandomInt(conditions.length)];
-    _temperature = conditions[getRandomInt(conditions.length)];
+    _humidity = conditions[getRandomInt(2)];
+    _temperature = conditions[getRandomInt(2)];
     _currentPoint = _destinationPoint;
     _destinationPoint = null;
 };

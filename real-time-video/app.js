@@ -1,4 +1,5 @@
-ws = new WebSocket("ws://localhost:8080");
+const serverUrl = '130.238.93.215'
+ws = new WebSocket("ws://" + serverUrl + ":8080");
 var canvas = document.getElementById('canvas-video');
 var context = canvas.getContext('2d');
 var map = document.getElementById('canvas-map');
@@ -10,6 +11,8 @@ var humidityDisplay = document.getElementById('humidity');
 var temperatureDisplay = document.getElementById('temperature');
 var commandsDisplay = document.getElementById('commands');
 var waitingOnRobot = document.getElementById('waiting-on-robot');
+
+//var serverHtml = 'http//localhost:4000';
 
 var dropoffPoints = [
   { 
@@ -186,7 +189,7 @@ map.addEventListener('click', function(evt) {
   var mousePos = getMousePos(map, evt);
   var selectedDp = isInsideDropoffPoint(mousePos);
   if (selectedDp) {
-    fetch('http://localhost:4000/commands', {
+    fetch('http://' + serverUrl + ':4000/commands', {
         body: JSON.stringify({
           destinationPoint: selectedDp.id
         }),
