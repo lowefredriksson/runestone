@@ -6,9 +6,10 @@ var mapContext = map.getContext('2d');
 
 var currentDpDisplay = document.getElementById('current-dp');
 var destinationDpDisplay = document.getElementById('destination-dp');
-var ligthDisplay = document.getElementById('light');
+var humidityDisplay = document.getElementById('humidity');
 var temperatureDisplay = document.getElementById('temperature');
 var commandsDisplay = document.getElementById('commands');
+var waitingOnRobot = document.getElementById('waiting-on-robot');
 
 var dropoffPoints = [
   { 
@@ -45,7 +46,8 @@ var dropoffPoints = [
     id: 5, 
     type: "INTERSECTION",
     x: 100,
-    y: 300
+    y: 300,
+    name: "Intersection 1"
   },
   {
     id: 6,
@@ -73,11 +75,7 @@ var dropoffPoints = [
 
 const dropoffPointSize = { width: 10, height: 0};
 const dropoffTouchRecognitionSize = { width: 40, height: 40 };
-let currentDp = dropoffPoints[8];
-let destDp = null;
-let light = null;
-let temperature = null;
-let commands = null;
+
 
 /*1: forward
 2: backward
@@ -101,111 +99,7 @@ function stringFromCommands(cmds) {
   return cmds.map(cmd => stringFromCommand(cmd))
 }
 
-const F = 1;
-const B = 2;
-const L = 3;
-const R = 4;
-
-/**
- * end facing direction of robot for each position
- * 
- * 0: up
- * 1: up
- * 2: up
- * 3: left 
- * 4: right
- * 5: up
- * 6: up
- * 7: up
- */
-
-const paths = {
-  0: {
-    1: [B, R, F, L, F],
-    2: [B, R, F, F, L, F],
-    3: [B, L, F],
-    4: [B, R, F, F, F],
-    5: [B],
-    6: [B, R, F, L],
-    7: [B, R, F, F, L]
-  },
-  1: {
-    0: [B, L, F, R, F],
-    2: [B, R, F, L, F],
-    3: [B, L, F, F],
-    4: [B, R, F, F],
-    5: [B, L, F, R],
-    6: [B],
-    7: [B, R, F, L]
-  },
-  2: {
-    0: [B, L, F, F, R, F],
-    1: [B, L, F, R, F],
-    3: [B, L, F, F, F],
-    4: [B, R, F],
-    5: [B, L, F, F, R],
-    6: [B, L, F, R],
-    7: [B]
-  },
-  3: {
-    0: [B, R, F],
-    1: [B, B, R, F],
-    2: [B, B, B, R, F],
-    4: [B, B, B, B, R, R],
-    5: [B, R],
-    6: [B, B, R],
-    7: [B, B, B, R]
-  },
-  4: {
-    0: [B, B, B, L, F],
-    1: [B, B, L, F],
-    2: [B, L, F],
-    3: [B, B, B, B, L, L],
-    5: [B, B, B, L],
-    6: [B, B, L],
-    7: [B, L]
-  },
-  5: {
-    0: [F],
-    1: [R, F, L, F],
-    2: [R, F, F, L, F],
-    3: [L, F],
-    4: [R, F, F, F],
-    6: [R, F, L],
-    7: [R, F, F, L]
-  },
-  6: {
-    0: [L, F, R, F],
-    1: [F],
-    2: [R, F, L, F],
-    3: [L, F, F],
-    4: [R, F, F],
-    5: [L, F, R],
-    7: [R, F, L]
-  },
-  7: {
-    0: [L, F, F, R, F],
-    1: [L, F, R, F],
-    2: [F],
-    3: [L, F, F, F],
-    4: [R, F],
-    5: [L, F, F, R],
-    6: [L, F, R]
-  },
-  8: {
-    0: [F, L, F, R, F],
-    1: [F, F],
-    2: [F, R, F, L, F],
-    3: [F, L, F, F],
-    4: [F, R, F, F],
-    5: [F, L, F, R],
-    7: [F, R, F, L]
-  },
-}
-
-
-function drawDropoffPoints(dropoffPoints) {
-
+function drawPoints(dropoffPoints) {
   mapContext.fillStyle = "red";
   for (var i = 0; i < dropoffPoints.length; i++) {
     const dp = dropoffPoints[i];
@@ -243,32 +137,21 @@ function drawGrid() {
 
 const robotSize = { width: 30, height: 30 }
 
-function moveRobot(dropOffId) {
+function updateMap(dropOffId) {
   console.log("move robot");
   const dp = dropoffPoints.find(d => d.id === dropOffId);
   if (dp) {
     mapContext.clearRect(0, 0, 600, 600);
     drawGrid()
-    drawDropoffPoints(dropoffPoints)
+    drawPoints(dropoffPoints)
     mapContext.fillStyle = "blue";
     mapContext.fillRect(dp.x - robotSize.width/2, dp.y - robotSize.height/2, robotSize.width, robotSize.height);
-    currentDp = dp
   }
 }
-
-function drawInitialMap() {
-  drawGrid()
-  drawDropoffPoints(dropoffPoints);
-  mapContext.fillStyle = "blue";
-  mapContext.fillRect(285, 560, robotSize.height, robotSize.width);
-}
-
-drawInitialMap();
 
 function isInside(pos, rect){
   return pos.x > rect.x-(rect.width/2) && pos.x < rect.x+(rect.width/2) && pos.y < rect.y+(rect.height/2) && pos.y > rect.y-(rect.height/2)
 }
-
 
 function isInsideDropoffPoint(pos) {
   for (var i = 0; i < dropoffPoints.length; i++) {
@@ -299,24 +182,35 @@ function getMousePos(canvas, event) {
   };
 }
 
-function updateDisplay() {
-  destinationDpDisplay.innerHTML = destDp ? destDp.name : "";
-  currentDpDisplay.innerHTML = currentDp ? currentDp.name : "";
-  ligthDisplay.innerHTML = light ? light : "";
-  temperatureDisplay.innerHTML = temperature ? temperature : "";
-  commandsDisplay.innerHTML = commands ? commands : "";
-}
-
 map.addEventListener('click', function(evt) {
   var mousePos = getMousePos(map, evt);
   var selectedDp = isInsideDropoffPoint(mousePos);
   if (selectedDp) {
-    destDp = selectedDp
-    commands = stringFromCommands(paths[currentDp.id][destDp.id])
-    updateDisplay();
+    fetch('http://localhost:4000/commands', {
+        body: JSON.stringify({
+          destinationPoint: selectedDp.id
+        }),
+        headers: {
+            'content-type': 'application/json'
+        },
+        method: 'POST'
+      }).then(response => console.log(response.json()))
   }
 }, false);
 
+function updateDisplay(destDp, currentDp, humidity, temperature, commands) {
+  destinationDpDisplay.innerHTML = dropoffPoints[destDp] ? dropoffPoints[destDp].name : "";
+  currentDpDisplay.innerHTML = dropoffPoints[currentDp] ? dropoffPoints[currentDp].name : "";
+  humidityDisplay.innerHTML = humidity ? humidity : "";
+  temperatureDisplay.innerHTML = temperature ? temperature : "";
+  commandsDisplay.innerHTML = commands ? stringFromCommands(commands) : "";
+  waitingOnRobot.innerHTML = destDp ? "Waiting on robot" : ""
+}
+
+function onRobotMessage(message) {
+  updateMap(message.currentPoint);
+  updateDisplay(message.destinationPoint, message.currentPoint, message.humidity, message.temperature, message.commands);
+}
 
 ws.onmessage = function (json) {
   var message = JSON.parse(json.data);
@@ -330,9 +224,7 @@ ws.onmessage = function (json) {
       break;
     case 'robot':
       console.log("robot", message);
-      
-      moveRobot(message.data.dropoffPoint);
-      updateDisplay();
+      onRobotMessage(JSON.parse(message.data));
       break; 
     default: break;
   }
