@@ -90,12 +90,12 @@ def forth():
             for i in range(1, 400):
                 mLeft.run_timed(time_sp=20, speed_sp=150)
                 mRight.run_timed(time_sp=20, speed_sp=-150)
-                if cs.value() == 1:
+                if cs.value() == 1 or cs.value() == 4 or cs.value() == 2:
                     break
             for j in range(1, 150):
                 mRight.run_timed(time_sp=20, speed_sp=100)
                 mLeft.run_timed(time_sp=20, speed_sp=-100)
-                if cs.value() == 1:
+                if cs.value() == 1 or cs.value() == 4 or cs.value() == 2:
                     break
 
         time.sleep(0.1)
@@ -113,7 +113,7 @@ def right():
     print("turning right")
     gs.mode = 'GYRO-RATE'
     gs.mode = 'GYRO-ANG'
-    mLeft.run_forever(speed_sp=-50)
+    mLeft.run_forever(speed_sp=0)
     mRight.run_forever(speed_sp=50)
     while gs.value() < 90:
         pass
@@ -124,7 +124,7 @@ def left():
     gs.mode = 'GYRO-RATE'
     gs.mode = 'GYRO-ANG'
     mLeft.run_forever(speed_sp=50)
-    mRight.run_forever(speed_sp=-50)
+    mRight.run_forever(speed_sp=0)
     while gs.value() > -90:
         pass
 
@@ -179,12 +179,12 @@ def forkdown():
             for i in range(1, 400):
                 mLeft.run_timed(time_sp=20, speed_sp=150)
                 mRight.run_timed(time_sp=20, speed_sp=-150)
-                if cs.value() == 1:
+                if cs.value() == 1 or cs.value() == 5:
                     break
             for j in range(1, 150):
                 mRight.run_timed(time_sp=20, speed_sp=100)
                 mLeft.run_timed(time_sp=20, speed_sp=-100)
-                if cs.value() == 1:
+                if cs.value() == 1 or cs.value() == 5:
                     break
 
 
